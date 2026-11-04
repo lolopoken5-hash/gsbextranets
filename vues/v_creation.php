@@ -31,12 +31,15 @@
                                     <div class="content-wrap">
 						<legend>je suis médecin, je souhaite créer un compte</legend>
 							<form method="post" action="index.php?uc=creation&action=valideCreation">
-                                                            <input name="login" class="form-control" type="email" placeholder="mail"/>
+                                                            <input name="login" class="form-control" type="email" placeholder="mail" style="margin-bottom: 8px"/>
 							    <input name="mdp" class="form-control" type="password" placeholder="password"/>
                                                             <input name="prénom" class="form-control" type="text" placeholder="prénom"/>
                                                             <input name="nom" class="form-control" type="text" placeholder="nom"/>
+
+                                                            <input name="consentement" type="checkbox" style="scale: 3.5; margin-top: 20px" id="conditions" required>
+                                                            <p style="margin-top: 30px ">J'atteste avoir lu et accepte notre <a href="vues/v_politiqueprotectiondonnees.html" target="_blank"  >Politique de protection des données</a>  </p>
 								<br>
-                                                            <input type="submit" class="btn btn-primary signup" value="Créer"/>
+                                                            <input type="submit" class="btn btn-primary signup" value="Créer" style="margin-top: 30px "/>
 							</form>
 							</br>
 						

@@ -16,7 +16,15 @@ switch($action){
            
 		$leLogin = htmlspecialchars($_POST['login']);
                 $lePassword = htmlspecialchars($_POST['mdp']);
+                $consentement = isset($_POST['consentement']);
         
+
+        if($consentement)
+        {
+
+            $consentementok = true;
+
+        }
         
         if ($leLogin == $_POST['login'])
         {
@@ -38,6 +46,11 @@ switch($action){
             echo 'Le login n\'a pas été saisi<br/>';
             $rempli=false;
         }
+        if (!$consentement) {
+            echo 'veuiller cocher la case <br/>';
+            $rempli=false; 
+        }
+
         if (empty($lePassword)==true){
             echo 'Le mot de passe n\'a pas été saisi<br/>';
             $rempli=false; 
@@ -91,6 +104,8 @@ switch($action){
                 else
                      echo "ce login existe déjà, veuillez en choisir un autre";
             }
+
+       
 
 			
         

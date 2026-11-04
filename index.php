@@ -3,12 +3,7 @@ session_start();
 require_once("include/fct.inc.php");
 require_once ("include/class.pdogsb.inc.php");
 
-
-
-
 date_default_timezone_set('Europe/Paris');
-
-
 
 $pdo = PdoGsb::getPdoGsb();
 $estConnecte = estConnecte();
@@ -24,23 +19,19 @@ else {
 
 $uc = $_GET['uc'];
 switch($uc){
-	case 'connexion':{
-		include("controleurs/c_connexion.php");break;
-	}
-        case 'creation':{
-		include("controleurs/c_creation.php");break;
-	}
-        
-	
-	}
-	
-
-
+    case 'connexion':{
+        include("controleurs/c_connexion.php");break;
+    }
+    case 'creation':{
+        include("controleurs/c_creation.php");break;
+    }
+    // <-- AJOUTE CE BLOC ICI POUR LA PORTABILITÉ :
+    case 'portabilite': {
+        include("controleurs/c_portabilite.php");
+        break;
+    }
+}
+    
+// Appel de la vue du pied de page
+include("v_footer.php"); 
 ?>
-
-
-
-
-
-
-

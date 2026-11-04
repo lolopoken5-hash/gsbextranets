@@ -45,6 +45,10 @@ else {
       <ul class="nav navbar-nav">
         
         <li class="active"><a href="index.php?uc=etatFrais&action=selectionnerMois">M'inscrire à une visio</a></li> 
+
+        <li>
+    <a href="index.php?uc=portabilite&action=demande">Droit à la portabilité (RGPD)</a>
+</li>
        
          
       </ul>
