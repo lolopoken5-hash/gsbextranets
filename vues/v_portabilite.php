@@ -17,8 +17,8 @@
     <?php else: ?>
         <!-- Affichage du lien de téléchargement et de l'empreinte -->
         <div class="alert alert-success">
-            <p>Votre fichier a été généré avec succès dans le dossier <code>portabilite/</code>.</p>
-            <a href="<?= htmlspecialchars($resultatExport['chemin_relatif']) ?>" download class="btn btn-primary">
+            <p>Votre fichier est prêt à être téléchargé.</p>
+            <a href="index.php?uc=portabilite&amp;action=telecharger" class="btn btn-primary">
                 📥 Télécharger <?= htmlspecialchars($resultatExport['nom_fichier']) ?>
             </a>
         </div>
