@@ -58,23 +58,45 @@ class PdoGsb{
  * @return bool
  * @throws Exception
  */
-    public function checkUser($login,$pwd):bool {
-        //AJOUTER TEST SUR TOKEN POUR ACTIVATION DU COMPTE
-        $user=false;
+    public function checkUser($login, $pwd): bool {
         $pdo = PdoGsb::$monPdo;
-        $monObjPdoStatement=$pdo->prepare("SELECT motDePasse FROM medecin WHERE mail= :login AND token IS NULL");
-        $bvc1=$monObjPdoStatement->bindValue(':login',$login,PDO::PARAM_STR);
-        if ($monObjPdoStatement->execute()) {
-            $unUser=$monObjPdoStatement->fetch();
-            if (is_array($unUser)){
-               if ($pwd==$unUser['motDePasse'])
-                    $user=true;
-            }
-        }
-        else {
+        $requete = $pdo->prepare(
+            "SELECT id, motDePasse FROM medecin WHERE mail = :login AND token IS NULL"
+        );
+        $requete->bindValue(':login', $login, PDO::PARAM_STR);
+        if (!$requete->execute()) {
             throw new Exception("erreur dans la requête");
         }
-        return $user;   
+
+        $medecin = $requete->fetch(PDO::FETCH_ASSOC);
+        if (!is_array($medecin) || !is_string($medecin['motDePasse'])) {
+            return false;
+        }
+
+        $motDePasseEnregistre = $medecin['motDePasse'];
+        if (password_verify($pwd, $motDePasseEnregistre)) {
+            return true;
+        }
+
+        if (hash_equals($motDePasseEnregistre, $pwd)) {
+            $nouveauHash = password_hash($pwd, PASSWORD_DEFAULT);
+            if ($nouveauHash === false) {
+                throw new RuntimeException("Impossible de sécuriser le mot de passe.");
+            }
+
+            $miseAJour = $pdo->prepare(
+                "UPDATE medecin SET motDePasse = :motDePasse WHERE id = :id"
+            );
+            $miseAJour->bindValue(':motDePasse', $nouveauHash, PDO::PARAM_STR);
+            $miseAJour->bindValue(':id', $medecin['id'], PDO::PARAM_INT);
+            if (!$miseAJour->execute()) {
+                throw new Exception("Impossible de mettre à jour le mot de passe.");
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     public function donneLeMedecinByMail($login) {
@@ -114,6 +136,11 @@ class PdoGsb{
     }
 
     public function creeMedecin($email, $mdp) {
+        $motDePasseHache = password_hash($mdp, PASSWORD_DEFAULT);
+        if ($motDePasseHache === false) {
+            throw new RuntimeException("Impossible de sécuriser le mot de passe.");
+        }
+
         $pdoStatement = PdoGsb::$monPdo->prepare(
             "INSERT INTO medecin
             (id, mail, motDePasse, dateCreation, dateConsentement)
@@ -121,7 +148,7 @@ class PdoGsb{
             (NULL, :leMail, :leMdp, NOW(), NOW())"
         );
         $pdoStatement->bindValue(':leMail', $email);
-        $pdoStatement->bindValue(':leMdp', $mdp);
+        $pdoStatement->bindValue(':leMdp', $motDePasseHache);
         $execution = $pdoStatement->execute();
         if ($execution) {
             $idMedecin = PdoGsb::$monPdo->lastInsertId();
@@ -156,6 +183,17 @@ class PdoGsb{
         else {
             throw new Exception("erreur");
         }
+    }
+
+    public function donneLesDonneesMedecin(int $idMedecin): ?array {
+        $pdoStatement = PdoGsb::$monPdo->prepare(
+            "SELECT * FROM medecin WHERE id = :id"
+        );
+        $pdoStatement->bindValue(':id', $idMedecin, PDO::PARAM_INT);
+        $pdoStatement->execute();
+
+        $medecin = $pdoStatement->fetch(PDO::FETCH_ASSOC);
+        return $medecin ?: null;
     }
 
 }

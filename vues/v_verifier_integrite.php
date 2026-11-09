@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['fichier_recupere']))
 ?>
 
 <div class="container mt-4">
-    <h3>Vérification d'intégrité du fichier JSON[cite: 2]</h3>
+    <h3>Vérification d'intégrité du fichier JSON</h3>
 
     <?= $messageIntegrite ?>
 

@@ -15,7 +15,7 @@ switch($action){
 		
            
 		$leLogin = htmlspecialchars($_POST['login']);
-                $lePassword = htmlspecialchars($_POST['mdp']);
+                $lePassword = $_POST['mdp'];
                 $consentement = isset($_POST['consentement']);
         
 
@@ -62,7 +62,6 @@ switch($action){
         if ($rempli){
             //supprimer les espaces avant/après saisie
             $leLogin = trim($leLogin);
-            $lePassword = trim($lePassword);
 
             
 

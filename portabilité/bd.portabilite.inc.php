@@ -3,18 +3,14 @@
 /**
  * Fonction 1 : Récupère les données du médecin en excluant l'id et le mot de passe
  */
-function getDonneesMedecin(PDO $pdo, int $idMedecin): ?array {
-    $req = $pdo->prepare("SELECT * FROM medecin WHERE id = :id");
-    $req->bindValue(':id', $idMedecin, PDO::PARAM_INT);
-    $req->execute();
-    
-    $medecin = $req->fetch(PDO::FETCH_ASSOC);
+function getDonneesMedecin(PdoGsb $pdo, int $idMedecin): ?array {
+    $medecin = $pdo->donneLesDonneesMedecin($idMedecin);
     if (!$medecin) {
         return null;
     }
     
     // Exclusion obligatoire de l'ID et de l'empreinte du mot de passe
-    unset($medecin['id'], $medecin['mdp'], $medecin['password'], $medecin['empreinte']);
+    unset($medecin['id'], $medecin['mdp'], $medecin['password'], $medecin['empreinte'], $medecin['motDePasse']);
     
     return $medecin;
 }
@@ -22,7 +18,7 @@ function getDonneesMedecin(PDO $pdo, int $idMedecin): ?array {
 /**
  * Fonction 2 : Appelle getDonneesMedecin(), génère le fichier id.json et retourne l'empreinte
  */
-function genererFichierJsonPortabilite(PDO $pdo, int $idMedecin): array {
+function genererFichierJsonPortabilite(PdoGsb $pdo, int $idMedecin): array {
     // 1. Appel de la première fonction
     $donnees = getDonneesMedecin($pdo, $idMedecin);
     if (!$donnees) {

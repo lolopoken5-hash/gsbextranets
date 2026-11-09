@@ -1,5 +1,5 @@
 <?php
-// Script de nettoyage des fichiers JSON[cite: 1]
+// Script de nettoyage des fichiers JSON
 $dossier = __DIR__ . '/../portabilite/';
 
 if (is_dir($dossier)) {
