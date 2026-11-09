@@ -121,7 +121,9 @@ class PdoGsb{
             (NULL, :leMail, :leMdp, NOW(), NOW())"
         );
         $pdoStatement->bindValue(':leMail', $email);
-        $pdoStatement->bindValue(':leMdp', $mdp);
+
+        $mdpHache = password_hash($mdp, PASSWORD_DEFAULT);
+        $pdoStatement->bindValue(':leMdp', $mdpHache);
         $execution = $pdoStatement->execute();
         if ($execution) {
             $idMedecin = PdoGsb::$monPdo->lastInsertId();
@@ -156,6 +158,59 @@ class PdoGsb{
         else {
             throw new Exception("erreur");
         }
+    }
+
+
+    public function insérerProduit() {
+      $pdoStatement = PdoGsb::$monPdo->prepare(
+          "INSERT INTO produit (nom, description, prix) VALUES (:nom, :description, :prix)"
+      );
+      $pdoStatement->bindValue(':nom', 'Nom du produit');
+      $pdoStatement->bindValue(':description', 'Description du produit');
+      $pdoStatement->bindValue(':prix', 0.0);
+      return $pdoStatement->execute();
+    }
+
+    public function supprimerProduit($id) {
+      $pdoStatement = PdoGsb::$monPdo->prepare(
+          "DELETE FROM produit WHERE id = :id"
+      );
+      $pdoStatement->bindValue(':id', $id, PDO::PARAM_INT);
+      return $pdoStatement->execute();
+    }
+
+    public function modifierProduit($id, $nom, $description, $prix) {
+      $pdoStatement = PdoGsb::$monPdo->prepare(
+          "UPDATE produit SET nom = :nom, description = :description, prix = :prix WHERE id = :id"
+      );
+      $pdoStatement->bindValue(':id', $id, PDO::PARAM_INT);
+      $pdoStatement->bindValue(':nom', $nom);
+      $pdoStatement->bindValue(':description', $description);
+      $pdoStatement->bindValue(':prix', $prix);
+      return $pdoStatement->execute();
+    }
+
+    public function nbrConsultationProduit($idProduit) {
+      $pdoStatement = PdoGsb::$monPdo->prepare(
+          "SELECT COUNT(*) AS nbrConsultations FROM consultation WHERE id_produit = :idProduit"
+      );
+      $pdoStatement->bindValue(':idProduit', $idProduit, PDO::PARAM_INT);
+      if ($pdoStatement->execute()) {
+          $resultat = $pdoStatement->fetch();
+          return $resultat['nbrConsultations'];
+      } else {
+          throw new Exception("Erreur dans la requête");
+      }
+    }
+
+    public function RéinitialiserMotDePasse($email, $nouveauMotDePasse) {
+        $pdoStatement = PdoGsb::$monPdo->prepare(
+            "UPDATE medecin SET motDePasse = :nouveauMotDePasse WHERE mail = :email"
+        );
+        $mdpHache = password_hash($nouveauMotDePasse, PASSWORD_DEFAULT);
+        $pdoStatement->bindValue(':nouveauMotDePasse', $mdpHache);
+        $pdoStatement->bindValue(':email', $email);
+        return $pdoStatement->execute();
     }
 
 }

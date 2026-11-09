@@ -1,5 +1,5 @@
 <?php
-require_once 'modele/bd.portabilite.inc.php';
+require_once __DIR__ . '/../portabilité/bd.portabilite.inc.php';
 
 $idMedecinConnecte = $_SESSION['idMedecin'] ?? $_SESSION['id'] ?? null;
 $action = $_REQUEST['action'] ?? 'demande';
