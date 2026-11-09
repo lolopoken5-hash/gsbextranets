@@ -1,7 +1,5 @@
 <?php
 
-require_once __DIR__ . '/../portabilité/bd.portabilite.inc.php';
-
 /**
  * Fonction 1 : Récupère les données du médecin en excluant l'id et le mot de passe
  */
