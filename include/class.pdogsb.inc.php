@@ -196,5 +196,39 @@ class PdoGsb{
         return $medecin ?: null;
     }
 
+    public function enregistreCode2FA(int $idMedecin, string $code): bool {
+        $pdoStatement = PdoGsb::$monPdo->prepare(
+            "UPDATE medecin
+            SET code2FA = :code, dateExpiration2FA = DATE_ADD(NOW(), INTERVAL 1 MINUTE)
+            WHERE id = :id"
+        );
+        $pdoStatement->bindValue(':code', $code, PDO::PARAM_STR);
+        $pdoStatement->bindValue(':id', $idMedecin, PDO::PARAM_INT);
+        return $pdoStatement->execute();
+    }
+
+    public function verifieEtEffaceCode2FA(int $idMedecin, string $code): bool {
+        $pdoStatement = PdoGsb::$monPdo->prepare(
+            "UPDATE medecin
+            SET code2FA = NULL, dateExpiration2FA = NULL
+            WHERE id = :id AND code2FA = :code AND dateExpiration2FA > NOW()"
+        );
+        $pdoStatement->bindValue(':id', $idMedecin, PDO::PARAM_INT);
+        $pdoStatement->bindValue(':code', $code, PDO::PARAM_STR);
+        if (!$pdoStatement->execute()) {
+            throw new RuntimeException("Impossible de vérifier le code de double authentification.");
+        }
+
+        return $pdoStatement->rowCount() === 1;
+    }
+
+    public function effaceCode2FA(int $idMedecin): bool {
+        $pdoStatement = PdoGsb::$monPdo->prepare(
+            "UPDATE medecin SET code2FA = NULL, dateExpiration2FA = NULL WHERE id = :id"
+        );
+        $pdoStatement->bindValue(':id', $idMedecin, PDO::PARAM_INT);
+        return $pdoStatement->execute();
+    }
+
 }
 ?>

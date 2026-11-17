@@ -88,4 +88,18 @@ function generateCode(){
     $hex = bin2hex($bytes);
     return $hex;
 }
+
+function genererCode2FA(): string {
+    return str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+}
+
+function envoyerCode2FA(string $email, string $code): bool {
+    $sujet = 'Votre code de connexion GSB';
+    $message = "Votre code de vérification est : " . $code
+        . "\nIl est valable pendant une minute.";
+    $entetes = "MIME-Version: 1.0\r\n";
+    $entetes .= "Content-Type: text/plain; charset=UTF-8\r\n";
+
+    return mail($email, $sujet, $message, $entetes);
+}
 ?>

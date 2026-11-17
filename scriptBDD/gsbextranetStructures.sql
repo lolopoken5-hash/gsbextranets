@@ -56,6 +56,8 @@ CREATE TABLE IF NOT EXISTS `medecin` (
   `dateDiplome` date DEFAULT NULL,
   `sport` tinyint(1) DEFAULT NULL,
   `dateConsentement` date DEFAULT NULL,
+  `code2FA` varchar(6) DEFAULT NULL,
+  `dateExpiration2FA` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
