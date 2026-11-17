@@ -94,14 +94,11 @@ if ($action === 'saisieCode') {
 			include("vues/v_connexion.php");
 		} elseif (!envoyerCode2FA($medecinEnAttente['mail'], $code)) {
 			$codeEfface = $pdo->effaceCode2FA($medecinEnAttente['id']);
-			unset($_SESSION['medecinEnAttente2FA']);
-			$messageErreur = "L'envoi du code par e-mail a échoué. Veuillez réessayer.";
+			$erreurCode = "L'envoi du code par e-mail a échoué. Vérifiez la configuration e-mail du serveur, puis réessayez.";
 			if (!$codeEfface) {
-				$messageErreur .= " Le code temporaire n'a pas pu être effacé.";
+				$erreurCode .= " Le code temporaire n'a pas pu être effacé.";
 			}
-			ajouterErreur($messageErreur);
-			include("vues/v_erreurs.php");
-			include("vues/v_connexion.php");
+			include("vues/v_saisie_code.php");
 		} else {
 			include("vues/v_saisie_code.php");
 		}

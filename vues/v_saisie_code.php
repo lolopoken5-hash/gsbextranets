@@ -5,7 +5,9 @@
                 <div class="box">
                     <div class="content-wrap">
                         <legend>Vérification en deux étapes</legend>
-                        <p>Un code à 6 chiffres a été envoyé par e-mail. Il est valable une minute.</p>
+                        <?php if (!isset($erreurCode)): ?>
+                            <p>Un code à 6 chiffres a été envoyé par e-mail. Il est valable une minute.</p>
+                        <?php endif; ?>
                         <?php if (isset($erreurCode)): ?>
                             <div class="alert alert-danger"><?= htmlspecialchars($erreurCode, ENT_QUOTES, 'UTF-8') ?></div>
                         <?php endif; ?>
@@ -14,7 +16,7 @@
                             <br>
                             <input type="submit" class="btn btn-primary signup" value="Vérifier le code">
                         </form>
-                        <a href="index.php?uc=connexion&amp;action=saisieCode">Renvoyer un nouveau code</a>
+                        <a href="index.php?uc=connexion&amp;action=saisieCode">Réessayer l’envoi d’un nouveau code</a>
                     </div>
                 </div>
             </div>
