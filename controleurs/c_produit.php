@@ -25,115 +25,54 @@ if (isset($_SESSION['messageProduit'])) {
     unset($_SESSION['messageProduit']);
 }
 
-$action = !isset($_REQUEST['action'])
-    ? 'liste'
-    : (is_string($_REQUEST['action']) ? $_REQUEST['action'] : '');
-$validerId = function ($valeur) {
-    if (!is_string($valeur) && !is_int($valeur)) {
-        return null;
-    }
-    $id = filter_var($valeur, FILTER_VALIDATE_INT, array(
-        'options' => array('min_range' => 1)
-    ));
-    return $id === false ? null : $id;
-};
-$lireValeursProduit = function () use ($valeursProduit) {
-    $valeurs = $valeursProduit;
-    foreach (array('nom', 'objectif', 'information', 'effetIndesirable') as $champ) {
-        $valeurs[$champ] = isset($_POST[$champ]) && is_string($_POST[$champ])
-            ? trim($_POST[$champ])
-            : '';
-    }
-    return $valeurs;
-};
-$lireChampsProduit = function () {
-    $champs = array();
-    foreach (array('nom', 'objectif', 'information', 'effetIndesirable') as $champ) {
-        if (!isset($_POST[$champ]) || !is_string($_POST[$champ])) {
-            return null;
-        }
-        $champs[$champ] = trim($_POST[$champ]);
-        if ($champs[$champ] === '') {
-            return null;
-        }
-    }
+$action = isset($_GET['action']) && is_string($_GET['action'])
+    ? $_GET['action']
+    : 'liste';
+$idSaisi = $_SERVER['REQUEST_METHOD'] === 'POST'
+    ? (isset($_POST['id']) ? $_POST['id'] : '')
+    : (isset($_GET['id']) ? $_GET['id'] : '');
+$id = is_string($idSaisi) ? filter_var($idSaisi, FILTER_VALIDATE_INT) : false;
 
-    if (preg_match('/^.{1,60}$/u', $champs['nom']) !== 1) {
-        return null;
-    }
+$formulaireValide = false;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $valeursProduit = array(
+        'nom' => isset($_POST['nom']) && is_string($_POST['nom']) ? trim($_POST['nom']) : '',
+        'objectif' => isset($_POST['objectif']) && is_string($_POST['objectif']) ? trim($_POST['objectif']) : '',
+        'information' => isset($_POST['information']) && is_string($_POST['information']) ? trim($_POST['information']) : '',
+        'effetIndesirable' => isset($_POST['effetIndesirable']) && is_string($_POST['effetIndesirable']) ? trim($_POST['effetIndesirable']) : ''
+    );
 
-    return $champs;
-};
+    $formulaireValide = $valeursProduit['nom'] !== ''
+        && preg_match('/^.{1,60}$/u', $valeursProduit['nom']) === 1
+        && $valeursProduit['objectif'] !== ''
+        && $valeursProduit['information'] !== ''
+        && $valeursProduit['effetIndesirable'] !== '';
+}
 
 try {
     switch ($action) {
         case 'ajouter':
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-                $erreur = "La création d'un produit doit être envoyée par formulaire.";
-                break;
-            }
-
-            $champs = $lireChampsProduit();
-            if ($champs === null) {
-                $erreur = 'Tous les champs sont obligatoires et le nom doit contenir au maximum 60 caractères.';
-                $valeursProduit = $lireValeursProduit();
-                break;
-            }
-
-            if (!$pdo->insérerProduit(
-                $champs['nom'],
-                $champs['objectif'],
-                $champs['information'],
-                $champs['effetIndesirable']
+                $erreur = "Le formulaire d'ajout doit être envoyé.";
+            } elseif (!$formulaireValide) {
+                $erreur = 'Renseignez tous les champs. Le nom est limité à 60 caractères.';
+            } elseif (!$pdo->insérerProduit(
+                $valeursProduit['nom'],
+                $valeursProduit['objectif'],
+                $valeursProduit['information'],
+                $valeursProduit['effetIndesirable']
             )) {
                 $erreur = "Le produit n'a pas pu être ajouté.";
-                $valeursProduit = $champs;
-                break;
-            }
-
-            $_SESSION['messageProduit'] = 'Le produit a été ajouté.';
-            header('Location: index.php?uc=produit');
-            exit;
-
-        case 'modifier':
-            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                $id = $validerId(isset($_POST['id']) ? $_POST['id'] : null);
-                $champs = $lireChampsProduit();
-
-                if ($id === null || $champs === null) {
-                    $erreur = 'Les données du produit sont invalides.';
-                    $produitAModifier = array_merge(
-                        array('id' => isset($_POST['id']) && is_string($_POST['id']) ? $_POST['id'] : ''),
-                        $lireValeursProduit()
-                    );
-                    break;
-                }
-
-                if ($pdo->donneProduitById($id) === null) {
-                    $erreur = 'Le produit demandé est introuvable.';
-                    break;
-                }
-
-                if (!$pdo->modifierProduit(
-                    $id,
-                    $champs['nom'],
-                    $champs['objectif'],
-                    $champs['information'],
-                    $champs['effetIndesirable']
-                )) {
-                    $erreur = 'Le produit n’a pas pu être modifié.';
-                    $produitAModifier = array_merge(array('id' => $id), $champs);
-                    break;
-                }
-
-                $_SESSION['messageProduit'] = 'Le produit a été modifié.';
+            } else {
+                $_SESSION['messageProduit'] = 'Le produit a été ajouté.';
                 header('Location: index.php?uc=produit');
                 exit;
             }
+            break;
 
-            $id = $validerId(isset($_GET['id']) ? $_GET['id'] : null);
-            if ($id === null) {
-                $erreur = 'Le produit demandé est invalide.';
+        case 'modifier':
+            if ($id === false || $id < 1) {
+                $erreur = 'Le numéro du produit est invalide.';
                 break;
             }
 
@@ -142,37 +81,46 @@ try {
                 $erreur = 'Le produit demandé est introuvable.';
                 break;
             }
-            $valeursProduit = $produitAModifier;
+
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $produitAModifier = array_merge(array('id' => $id), $valeursProduit);
+                if (!$formulaireValide) {
+                    $erreur = 'Renseignez tous les champs. Le nom est limité à 60 caractères.';
+                } elseif (!$pdo->modifierProduit(
+                    $id,
+                    $valeursProduit['nom'],
+                    $valeursProduit['objectif'],
+                    $valeursProduit['information'],
+                    $valeursProduit['effetIndesirable']
+                )) {
+                    $erreur = 'Le produit n’a pas pu être modifié.';
+                } else {
+                    $_SESSION['messageProduit'] = 'Le produit a été modifié.';
+                    header('Location: index.php?uc=produit');
+                    exit;
+                }
+            } else {
+                $valeursProduit = $produitAModifier;
+            }
             break;
 
         case 'supprimer':
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
                 $erreur = 'La suppression doit être envoyée par formulaire.';
-                break;
-            }
-
-            $id = $validerId(isset($_POST['id']) ? $_POST['id'] : null);
-            if ($id === null) {
-                $erreur = 'Le produit demandé est invalide.';
-                break;
-            }
-
-            if ($pdo->donneProduitById($id) === null) {
+            } elseif ($id === false || $id < 1) {
+                $erreur = 'Le numéro du produit est invalide.';
+            } elseif ($pdo->donneProduitById($id) === null) {
                 $erreur = 'Le produit demandé est introuvable.';
-                break;
-            }
-
-            if (!$pdo->supprimerProduit($id)) {
+            } elseif (!$pdo->supprimerProduit($id)) {
                 $erreur = 'Le produit n’a pas pu être supprimé.';
-                break;
+            } else {
+                $_SESSION['messageProduit'] = 'Le produit a été supprimé.';
+                header('Location: index.php?uc=produit');
+                exit;
             }
-
-            $_SESSION['messageProduit'] = 'Le produit a été supprimé.';
-            header('Location: index.php?uc=produit');
-            exit;
+            break;
 
         case 'liste':
-        case 'demande':
             break;
 
         default:
