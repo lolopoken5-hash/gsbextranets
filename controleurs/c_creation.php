@@ -1,5 +1,7 @@
 ﻿<?php
 
+/** @var PdoGsb $pdo */
+$pdo = PdoGsb::getPdoGsb();
 
 if(!isset($_GET['action'])){
 	$_GET['action'] = 'demandeCreation';
@@ -14,8 +16,8 @@ switch($action){
 	case 'valideCreation':{
 		
            
-		$leLogin = htmlspecialchars($_POST['login']);
-                $lePassword = htmlspecialchars($_POST['mdp']);
+		$leLogin = isset($_POST['login']) && is_string($_POST['login']) ? trim($_POST['login']) : '';
+                $lePassword = isset($_POST['mdp']) && is_string($_POST['mdp']) ? $_POST['mdp'] : '';
                 $consentement = isset($_POST['consentement']);
         
 
@@ -26,18 +28,8 @@ switch($action){
 
         }
         
-        if ($leLogin == $_POST['login'])
-        {
-             $loginOk = true;
-             $passwordOk=true;
-        }
-        else{
-            echo 'tentative d\'injection javascript - login refusé';
-             $loginOk = false;
-             $passwordOk=false;
-        }
-        //test récup données
-        //echo $leLogin.' '.$lePassword;
+        $loginOk = true;
+        $passwordOk = true;
         $rempli=false;
         if ($loginOk && $passwordOk){
         //obliger l'utilisateur à saisir login/mdp
@@ -60,12 +52,6 @@ switch($action){
         //si le login et le mdp contiennent quelque chose
         // on continue les vérifications
         if ($rempli){
-            //supprimer les espaces avant/après saisie
-            $leLogin = trim($leLogin);
-            $lePassword = trim($lePassword);
-
-            
-
             //vérification de la taille du champs
             
             $nbCarMaxLogin = $pdo->tailleChampsMail();

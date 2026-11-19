@@ -1,5 +1,7 @@
 ﻿<?php
 
+/** @var PdoGsb $pdo */
+$pdo = PdoGsb::getPdoGsb();
 
 if(!isset($_GET['action'])){
 	$_GET['action'] = 'demandeConnexion';
@@ -12,8 +14,8 @@ switch($action){
 		break;
 	}
 	case 'valideConnexion':{
-		$login = $_POST['login'];
-		$mdp = $_POST['mdp'];
+		$login = isset($_POST['login']) && is_string($_POST['login']) ? trim($_POST['login']) : '';
+		$mdp = isset($_POST['mdp']) && is_string($_POST['mdp']) ? $_POST['mdp'] : '';
 		$connexionOk = $pdo->checkUser($login,$mdp);
 		if(!$connexionOk){
 			ajouterErreur("Login ou mot de passe incorrect");

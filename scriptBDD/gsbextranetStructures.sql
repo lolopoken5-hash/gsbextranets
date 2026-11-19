@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS `medecin` (
   `telephone` varchar(10) DEFAULT NULL,
   `mail` varchar(50) DEFAULT NULL,
   `dateNaissance` date DEFAULT NULL,
-  `motDePasse` varchar(30) DEFAULT NULL,
+  `motDePasse` varchar(255) DEFAULT NULL,
   `dateCreation` datetime DEFAULT NULL,
   `rpps` varchar(10) DEFAULT NULL,
   `token` varchar(100) DEFAULT NULL,

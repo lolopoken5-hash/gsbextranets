@@ -52,29 +52,48 @@ class PdoGsb{
 /**
  * vérifie si le login et le mot de passe sont corrects
  * renvoie true si les 2 sont corrects
- * @param type $lePDO
- * @param type $login
- * @param type $pwd
+ * @param string $login
+ * @param string $pwd
  * @return bool
  * @throws Exception
  */
     public function checkUser($login,$pwd):bool {
-        //AJOUTER TEST SUR TOKEN POUR ACTIVATION DU COMPTE
-        $user=false;
-        $pdo = PdoGsb::$monPdo;
-        $monObjPdoStatement=$pdo->prepare("SELECT motDePasse FROM medecin WHERE mail= :login AND token IS NULL");
-        $bvc1=$monObjPdoStatement->bindValue(':login',$login,PDO::PARAM_STR);
-        if ($monObjPdoStatement->execute()) {
-            $unUser=$monObjPdoStatement->fetch();
-            if (is_array($unUser)){
-               if ($pwd==$unUser['motDePasse'])
-                    $user=true;
-            }
+        if (!is_string($login) || !is_string($pwd) || $login === '' || $pwd === '') {
+            return false;
         }
-        else {
+
+        $pdo = PdoGsb::$monPdo;
+        $statement = $pdo->prepare(
+            "SELECT id, motDePasse FROM medecin WHERE mail = :login AND token IS NULL"
+        );
+        $statement->bindValue(':login', $login, PDO::PARAM_STR);
+        if (!$statement->execute()) {
             throw new Exception("erreur dans la requête");
         }
-        return $user;   
+
+        $utilisateur = $statement->fetch(PDO::FETCH_ASSOC);
+        if (!is_array($utilisateur) || !is_string($utilisateur['motDePasse'])) {
+            return false;
+        }
+
+        if (password_verify($pwd, $utilisateur['motDePasse'])) {
+            return true;
+        }
+
+        if (hash_equals($utilisateur['motDePasse'], $pwd)) {
+            $motDePasseHache = password_hash($pwd, PASSWORD_DEFAULT);
+            $miseAJour = $pdo->prepare(
+                "UPDATE medecin SET motDePasse = :motDePasse WHERE id = :id"
+            );
+            $miseAJour->bindValue(':motDePasse', $motDePasseHache, PDO::PARAM_STR);
+            $miseAJour->bindValue(':id', $utilisateur['id'], PDO::PARAM_INT);
+            if (!$miseAJour->execute()) {
+                throw new Exception("Impossible de sécuriser le mot de passe existant.");
+            }
+            return true;
+        }
+
+        return false;
     }
 
     public function donneLeMedecinByMail($login) {
