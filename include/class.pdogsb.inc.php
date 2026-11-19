@@ -42,7 +42,7 @@ class PdoGsb{
  * Appel : $instancePdoGsb = PdoGsb::getPdoGsb();
  * @return l'unique objet de la classe PdoGsb
  */
-    public static function getPdoGsb(){
+    public static function getPdoGsb(): PdoGsb {
         if(PdoGsb::$monPdoGsb==null){
             PdoGsb::$monPdoGsb= new PdoGsb();
         }
@@ -161,13 +161,41 @@ class PdoGsb{
     }
 
 
-    public function insérerProduit() {
-      $pdoStatement = PdoGsb::$monPdo->prepare(
-          "INSERT INTO produit (nom, description, prix) VALUES (:nom, :description, :prix)"
+    public function donneLesProduits() {
+      $pdoStatement = PdoGsb::$monPdo->query(
+          "SELECT id, nom, objectif, information, effetIndesirable
+           FROM produit
+           ORDER BY nom"
       );
-      $pdoStatement->bindValue(':nom', 'Nom du produit');
-      $pdoStatement->bindValue(':description', 'Description du produit');
-      $pdoStatement->bindValue(':prix', 0.0);
+      if ($pdoStatement === false) {
+          throw new Exception("Impossible de récupérer les produits.");
+      }
+      return $pdoStatement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function donneProduitById($id) {
+      $pdoStatement = PdoGsb::$monPdo->prepare(
+          "SELECT id, nom, objectif, information, effetIndesirable
+           FROM produit
+           WHERE id = :id"
+      );
+      $pdoStatement->bindValue(':id', $id, PDO::PARAM_INT);
+      if (!$pdoStatement->execute()) {
+          throw new Exception("Impossible de récupérer le produit.");
+      }
+      $produit = $pdoStatement->fetch(PDO::FETCH_ASSOC);
+      return $produit ? $produit : null;
+    }
+
+    public function insérerProduit($nom, $objectif, $information, $effetIndesirable) {
+      $pdoStatement = PdoGsb::$monPdo->prepare(
+          "INSERT INTO produit (nom, objectif, information, effetIndesirable)
+           VALUES (:nom, :objectif, :information, :effetIndesirable)"
+      );
+      $pdoStatement->bindValue(':nom', $nom, PDO::PARAM_STR);
+      $pdoStatement->bindValue(':objectif', $objectif, PDO::PARAM_STR);
+      $pdoStatement->bindValue(':information', $information, PDO::PARAM_STR);
+      $pdoStatement->bindValue(':effetIndesirable', $effetIndesirable, PDO::PARAM_STR);
       return $pdoStatement->execute();
     }
 
@@ -179,14 +207,18 @@ class PdoGsb{
       return $pdoStatement->execute();
     }
 
-    public function modifierProduit($id, $nom, $description, $prix) {
+    public function modifierProduit($id, $nom, $objectif, $information, $effetIndesirable) {
       $pdoStatement = PdoGsb::$monPdo->prepare(
-          "UPDATE produit SET nom = :nom, description = :description, prix = :prix WHERE id = :id"
+          "UPDATE produit
+           SET nom = :nom, objectif = :objectif, information = :information,
+               effetIndesirable = :effetIndesirable
+           WHERE id = :id"
       );
       $pdoStatement->bindValue(':id', $id, PDO::PARAM_INT);
-      $pdoStatement->bindValue(':nom', $nom);
-      $pdoStatement->bindValue(':description', $description);
-      $pdoStatement->bindValue(':prix', $prix);
+      $pdoStatement->bindValue(':nom', $nom, PDO::PARAM_STR);
+      $pdoStatement->bindValue(':objectif', $objectif, PDO::PARAM_STR);
+      $pdoStatement->bindValue(':information', $information, PDO::PARAM_STR);
+      $pdoStatement->bindValue(':effetIndesirable', $effetIndesirable, PDO::PARAM_STR);
       return $pdoStatement->execute();
     }
 

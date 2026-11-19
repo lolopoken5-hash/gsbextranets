@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS `medecinvisio` (
 
 DROP TABLE IF EXISTS `produit`;
 CREATE TABLE IF NOT EXISTS `produit` (
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `nom` varchar(60) NOT NULL,
   `objectif` mediumtext NOT NULL,
   `information` mediumtext NOT NULL,

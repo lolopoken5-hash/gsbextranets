@@ -1,0 +1,2 @@
+ALTER TABLE `produit`
+MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;

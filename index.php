@@ -25,6 +25,10 @@ switch($uc){
     case 'creation':{
         include("controleurs/c_creation.php");break;
     }
+    case 'produit': {
+        include("controleurs/c_produit.php");
+        break;
+    }
     // <-- AJOUTE CE BLOC ICI POUR LA PORTABILITÉ :
     case 'portabilite': {
         include("controleurs/c_portabilite.php");
