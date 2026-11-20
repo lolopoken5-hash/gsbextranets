@@ -8,6 +8,7 @@ lancerTestProduit(function ($lePdo, $idTest) {
         'Produit test modifié',
         'Objectif modifié',
         'Information modifiée',
-        'Effets indésirables modifiés'
+        'Effets indésirables modifiés',
+        null
     ));
 });

@@ -182,7 +182,7 @@ class PdoGsb{
 
     public function donneLesProduits() {
       $pdoStatement = PdoGsb::$monPdo->query(
-          "SELECT id, nom, objectif, information, effetIndesirable
+          "SELECT id, nom, objectif, information, effetIndesirable, image
            FROM produit
            ORDER BY nom"
       );
@@ -194,7 +194,7 @@ class PdoGsb{
 
     public function donneProduitById($id) {
       $pdoStatement = PdoGsb::$monPdo->prepare(
-          "SELECT id, nom, objectif, information, effetIndesirable
+          "SELECT id, nom, objectif, information, effetIndesirable, image
            FROM produit
            WHERE id = :id"
       );
@@ -206,15 +206,16 @@ class PdoGsb{
       return $produit ? $produit : null;
     }
 
-    public function insérerProduit($nom, $objectif, $information, $effetIndesirable) {
+    public function insérerProduit($nom, $objectif, $information, $effetIndesirable, $image) {
       $pdoStatement = PdoGsb::$monPdo->prepare(
-          "INSERT INTO produit (nom, objectif, information, effetIndesirable)
-           VALUES (:nom, :objectif, :information, :effetIndesirable)"
+          "INSERT INTO produit (nom, objectif, information, effetIndesirable, image)
+           VALUES (:nom, :objectif, :information, :effetIndesirable, :image)"
       );
       $pdoStatement->bindValue(':nom', $nom, PDO::PARAM_STR);
       $pdoStatement->bindValue(':objectif', $objectif, PDO::PARAM_STR);
       $pdoStatement->bindValue(':information', $information, PDO::PARAM_STR);
       $pdoStatement->bindValue(':effetIndesirable', $effetIndesirable, PDO::PARAM_STR);
+      $pdoStatement->bindValue(':image', $image, PDO::PARAM_STR);
       return $pdoStatement->execute();
     }
 
@@ -226,11 +227,12 @@ class PdoGsb{
       return $pdoStatement->execute();
     }
 
-    public function modifierProduit($id, $nom, $objectif, $information, $effetIndesirable) {
+    public function modifierProduit($id, $nom, $objectif, $information, $effetIndesirable, $image) {
       $pdoStatement = PdoGsb::$monPdo->prepare(
           "UPDATE produit
            SET nom = :nom, objectif = :objectif, information = :information,
-               effetIndesirable = :effetIndesirable
+               effetIndesirable = :effetIndesirable,
+               image = COALESCE(:image, image)
            WHERE id = :id"
       );
       $pdoStatement->bindValue(':id', $id, PDO::PARAM_INT);
@@ -238,6 +240,11 @@ class PdoGsb{
       $pdoStatement->bindValue(':objectif', $objectif, PDO::PARAM_STR);
       $pdoStatement->bindValue(':information', $information, PDO::PARAM_STR);
       $pdoStatement->bindValue(':effetIndesirable', $effetIndesirable, PDO::PARAM_STR);
+      $pdoStatement->bindValue(
+          ':image',
+          $image,
+          $image === null ? PDO::PARAM_NULL : PDO::PARAM_STR
+      );
       return $pdoStatement->execute();
     }
 

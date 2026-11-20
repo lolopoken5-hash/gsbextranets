@@ -7,6 +7,7 @@ lancerTestProduit(function ($lePdo, $idTest) {
         'Produit test ajouté',
         'Objectif de test',
         'Information de test',
-        'Aucun'
+        'Aucun',
+        'images/produits/test.jpg'
     ));
 });
