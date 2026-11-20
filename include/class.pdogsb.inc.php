@@ -227,6 +227,20 @@ class PdoGsb{
       return $pdoStatement->execute();
     }
 
+    public function regarderProduit($id) {
+      $pdoStatement = PdoGsb::$monPdo->prepare(
+          "SELECT id, nom, objectif, information, effetIndesirable, image
+           FROM produit
+           WHERE id = :id"
+      );
+      $pdoStatement->bindValue(':id', $id, PDO::PARAM_INT);
+      if (!$pdoStatement->execute()) {
+          throw new Exception("Impossible de récupérer le produit.");
+      }
+      $produit = $pdoStatement->fetch(PDO::FETCH_ASSOC);
+      return $produit ? $produit : null;
+    }
+
     public function modifierProduit($id, $nom, $objectif, $information, $effetIndesirable, $image) {
       $pdoStatement = PdoGsb::$monPdo->prepare(
           "UPDATE produit
